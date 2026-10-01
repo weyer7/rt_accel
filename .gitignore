@@ -1,0 +1,7 @@
+build/*
+model/build/*
+pdks/
+*.vcd
+*.fst
+*.log
+abc.history
