@@ -1,7 +1,7 @@
 `ifndef RTU_PKG_SVH
 `define RTU_PKG_SVH
 
-package rtu_pkg;
+// package rtu_pkg;
 
     //=====================================
     //parameters
@@ -97,14 +97,14 @@ package rtu_pkg;
 
     typedef struct packed {
         ray_id_t ray_id;
-        addr_t bvh_root;
+        // addr_t bvh_root;
         logic [31:0] control;
 
         float3_t origin;
         float3_t direction;
 
-        fp32_t t_min;
-        fp32_t t_max;
+        // fp32_t t_min;
+        // fp32_t t_max;
 
     } ray_request_t;
 
@@ -245,6 +245,6 @@ package rtu_pkg;
 
     } hit_result_t;
 
-endpackage : rtu_pkg
+// endpackage : rtu_pkg
 
 `endif // RTU_PKG_SVH
