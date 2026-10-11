@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sun Oct 11 21:05:52 2026
+[*]
+[dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_comp.vcd"
+[dumpfile_mtime] "Sun Oct 11 21:04:35 2026"
+[dumpfile_size] 2135
+[savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_comp.gtkw"
+[timestart] 0
+[size] 2560 1481
+[pos] -27 -24
+*-17.475594 896600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 297
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 465
+@28
+q16p16_comp_tb.a_gt_b
+q16p16_comp_tb.a_lt_b
+q16p16_comp_tb.clk
+q16p16_comp_tb.n_rst
+@22
+q16p16_comp_tb.operand_a[31:0]
+q16p16_comp_tb.operand_b[31:0]
+@28
+q16p16_comp_tb.ready_i
+q16p16_comp_tb.ready_o
+q16p16_comp_tb.valid_i
+q16p16_comp_tb.valid_o
+[pattern_trace] 1
+[pattern_trace] 0
