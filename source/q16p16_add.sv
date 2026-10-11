@@ -14,6 +14,7 @@ module q16p16_add
     output logic [31:0] sum,
     output logic valid_o,
     input logic ready_i
+    //consider adding overflow
 );
     
     //stall logic
