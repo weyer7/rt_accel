@@ -8,6 +8,12 @@
 export PATH := /home/shay/a/ece270/bin:$(PATH)
 export LD_LIBRARY_PATH := /home/shay/a/ece270/lib:$(LD_LIBRARY_PATH)
 
+# Variables for PDK Installation
+export PDK_ROOT := $(PWD)/pdks
+export PDK := sky130A
+export PDK_PATH := $(PDK_ROOT)/$(PDK)
+export PDK_VERSION_TAG := 0fe599b2afb6708d281543108caf8310912f54af
+
 YOSYS=yosys
 NEXTPNR=nextpnr-ice40
 SHELL=bash
@@ -28,7 +34,8 @@ TIMEDEV = hx8k
 FOOTPRINT = ct256
 
 # PDK sky130A Standard Cell Libraries
-VERILOG := /usr/share/yosys/ice40/cells_sim.v /usr/share/yosys/ice40/cells_map.v
+LIBERTY := $(PDK_PATH)/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_100C_1v80.lib
+VERILOG := $(PDK_PATH)/libs.ref/sky130_fd_sc_hd/verilog/primitives.v $(PDK_PATH)/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 help:
 	@echo -e "Help..."
@@ -37,16 +44,20 @@ help:
 # Setup sky130 PDK files
 .PHONY: setup_pdk
 setup_pdk:
-	@python3 -m pip install --user --upgrade --no-cache-dir volare &&\
+	@python3 -m pip install --upgrade --no-cache-dir ciel &&\
 	mkdir -p pdks && \
-	volare enable --pdk sky130 $(PDK_VERSION_TAG) &&\
+	ciel enable --pdk sky130 $(PDK_VERSION_TAG) &&\
 	echo -e "\nPDK Setup Complete!\n"
 
 
 # Check environment (sky130A must be loaded)
 .PHONY: check_env
 check_env:
-	echo -e "\nEnvironment setup correctly!\n";
+	@if [ -z "$$(ls -A $(PDK_ROOT) 2>/dev/null)" ]; then \
+		echo -e "\nERROR: PDK not found! Have you run \"make setup_pdk\"?\n" >&2; exit 1; \
+	else \
+		echo -e "\nEnvironment setup correctly!\n"; \
+	fi
 
 # *******************************************************************************
 # COMPILATION & SIMULATION TARGETS
@@ -57,7 +68,7 @@ check_env:
 sim_%_src: 
 	@echo -e "Creating executable for source simulation...\n"
 	@mkdir -p $(BUILD) && rm -rf $(BUILD)/*
-	@iverilog -g2012 -o $(BUILD)/$*_tb -Y .sv -y $(SRC) $(TB)/$*_tb.sv
+	@iverilog -g2012 -o $(BUILD)/$*_tb -Y .sv -I $(SRC) -y $(SRC) $(TB)/$*_tb.sv
 	@echo -e "\nSource Compilation complete!\n"
 	@echo -e "Simulating source...\n"
 	@vvp -l vvp_sim.log $(BUILD)/$*_tb
@@ -75,7 +86,7 @@ sim_%_src:
 syn_%: check_env
 	@echo -e "Synthesizing design...\n"
 	@mkdir -p $(MAP)
-	$(YOSYS) -d -p "read_verilog -sv -noblackbox $(SRC)/*; synth_ice40 -top $*; write_verilog -noattr -noexpr -nohex -nodec -defparam $(MAP)/$*.v" > $*.log
+	$(YOSYS) -d -p "read_verilog -sv -noblackbox $(SRC)/*; synth -top $*; dfflibmap -liberty $(LIBERTY); abc -liberty $(LIBERTY); clean; write_verilog -noattr -noexpr -nohex -nodec -defparam $(MAP)/$*.v" > $*.log
 	@echo -e "\nSynthesis complete!\n"
 
 
@@ -125,7 +136,7 @@ $(BUILD)/$(FPGA_TOP).json : $(ICE) $(SRC)/* $(PINMAP)
 	# if build folder doesn't exist, create it
 	mkdir -p $(BUILD)
 	# synthesize using Yosys
-	$(YOSYS) -p "read_verilog -sv -noblackbox $(ICE) $(UART) $(SRC)/*; synth_ice40 -top ice40hx8k; write_json -noscopeinfo $(BUILD)/$(FPGA_TOP).json"
+	$(YOSYS) -p "read_verilog -sv -noblackbox $(ICE) $(UART) $(SRC)/*; synth_ice40 -top ice40hx8k -json $(BUILD)/$(FPGA_TOP).json"
 
 
 # Place and route design using nextpnr
@@ -197,5 +208,4 @@ clean:
 veryclean: clean
 	@rm -rf $(PDK_ROOT) &&\
 	echo -e "PDK files removed!\n"
-
 

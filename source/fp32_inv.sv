@@ -1,4 +1,5 @@
 `default_nettype none
+`ifdef FP
 `define MODEL
 module fp32_inv
     import rtu_pkg::*;
@@ -57,3 +58,4 @@ module fp32_inv
     end
 `endif
 endmodule
+`endif

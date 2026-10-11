@@ -1,7 +1,6 @@
 `default_nettype none
-module q16p16_add
-    // import rtu_pkg::*;
-(
+`include "rtu_pkg.svh"
+module q16p16_add (
     input logic clk, n_rst,
 
     //input interface

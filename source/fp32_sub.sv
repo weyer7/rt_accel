@@ -1,4 +1,5 @@
 `default_nettype none
+`ifdef FP
 module fp32_sub
     import rtu_pkg::*;
 (
@@ -18,3 +19,4 @@ module fp32_sub
     //invert sign of second operand
     fp32_add(.*, .operand_b({~operand_b[31], operand_b[30:0]}));
 endmodule
+`endif

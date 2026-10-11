@@ -1,8 +1,8 @@
 `default_nettype none
 
-module q16p16_inv
-    // import rtu_pkg::*;
-(
+module q16p16_inv #(
+    parameter int PIPELINE_STAGES = 32
+)(
     input logic clk, n_rst,
 
     //input interface
