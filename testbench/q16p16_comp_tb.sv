@@ -22,7 +22,7 @@ module q16p16_comp_tb;
     logic valid_o_exp;
     logic ready_o_exp;
 
-    q16p16_comp comper (.*);
+    q16p16_comp comparator (.*);
 
     always #5 clk = ~clk;
 

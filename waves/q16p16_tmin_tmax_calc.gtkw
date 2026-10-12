@@ -1,0 +1,96 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon Oct 12 00:03:25 2026
+[*]
+[dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_tmin_tmax_calc.vcd"
+[dumpfile_mtime] "Mon Oct 12 00:01:57 2026"
+[dumpfile_size] 23263
+[savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_tmin_tmax_calc.gtkw"
+[timestart] 0
+[size] 2560 1481
+[pos] -1 -1
+*-18.503540 1222000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] q16p16_tmin_tmax_calc_tb.
+[treeopen] q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.
+[sst_width] 297
+[signals_width] 190
+[sst_expanded] 1
+[sst_vpaned_height] 465
+@28
+q16p16_tmin_tmax_calc_tb.clk
+q16p16_tmin_tmax_calc_tb.n_rst
+@200
+-Inputs
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.corner_a[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.corner_b[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.ray_origin[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.inv_dir[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.request_tmax_i[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.request_tmin_i[31:0]
+@28
+q16p16_tmin_tmax_calc_tb.valid_i
+q16p16_tmin_tmax_calc_tb.ready_o
+@200
+-Outputs
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmax_o[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_o[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.request_tmax_o[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.request_tmin_o[31:0]
+@28
+q16p16_tmin_tmax_calc_tb.valid_o
+q16p16_tmin_tmax_calc_tb.ready_i
+@200
+-Expected
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.expected_tmax[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.expected_tmin[31:0]
+@200
+-Actual
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmax_o[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_o[31:0]
+@28
+q16p16_tmin_tmax_calc_tb.valid_o
+@200
+-
+-
+-Subtract
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.a_minus_o_calc.operand_a[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.a_minus_o_calc.operand_b[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.a_minus_o_calc.sum[31:0]
+@28
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.a_minus_o_calc.valid_o
+@200
+-Compare
+@28
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.compare_times.a_gt_b
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.compare_times.a_lt_b
+@40000420
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.compare_times.operand_a[31:0]
+[fpshift_count] 16
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.compare_times.operand_b[31:0]
+@28
+q16p16_tmin_tmax_calc_tb.tmin_tmax_calc.compare_times.valid_o
+[pattern_trace] 1
+[pattern_trace] 0

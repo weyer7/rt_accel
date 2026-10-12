@@ -13,7 +13,7 @@ module q16p16_comp (
     output logic a_gt_b, a_lt_b,
     output logic valid_o,
     input logic ready_i
-    //consider comping overflow
+    //consider adding overflow
 );
     
     //stall logic
@@ -40,8 +40,8 @@ module q16p16_comp (
 
     //integer compare
     logic a_gt_b_next, a_lt_b_next;
-    assign a_gt_b_next = a_reg > b_reg ? 1 : 0;
-    assign a_lt_b_next = a_reg < b_reg ? 1 : 0;
+    assign a_gt_b_next = $signed(a_reg) > $signed(b_reg) ? 1 : 0;
+    assign a_lt_b_next = $signed(a_reg) < $signed(b_reg) ? 1 : 0;
 
     //output register
     always_ff @(posedge clk, negedge n_rst) begin
