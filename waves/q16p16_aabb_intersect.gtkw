@@ -1,22 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon Oct 12 02:40:33 2026
+[*] Mon Oct 12 03:19:19 2026
 [*]
 [dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_aabb_intersect.vcd"
-[dumpfile_mtime] "Mon Oct 12 02:37:09 2026"
-[dumpfile_size] 54503
+[dumpfile_mtime] "Mon Oct 12 03:18:50 2026"
+[dumpfile_size] 9071960
 [savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_aabb_intersect.gtkw"
 [timestart] 0
 [size] 2560 1481
-[pos] -27 -24
-*-18.741833 379000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-18.741833 997000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] q16p16_aabb_intersect_tb.
 [sst_width] 297
 [signals_width] 182
 [sst_expanded] 1
 [sst_vpaned_height] 465
-@420
-q16p16_aabb_intersect_tb.u_dut.TOTAL_LATENCY
 @28
 q16p16_aabb_intersect_tb.u_dut.clk
 q16p16_aabb_intersect_tb.u_dut.n_rst
@@ -48,8 +46,6 @@ q16p16_aabb_intersect_tb.u_dut.req_tmin_z[31:0]
 @22
 q16p16_aabb_intersect_tb.u_dut.request[551:0]
 q16p16_aabb_intersect_tb.u_dut.result[72:0]
-@28
-q16p16_aabb_intersect_tb.u_dut.stall
 @40000420
 [fpshift_count] 16
 q16p16_aabb_intersect_tb.u_dut.tfar_mid[31:0]
@@ -75,12 +71,12 @@ q16p16_aabb_intersect_tb.u_dut.valid_tfar_o
 -Outputs
 @28
 q16p16_aabb_intersect_tb.u_dut.hit_final
-q16p16_aabb_intersect_tb.u_dut.valid_o
-@40000421
-[fpshift_count] 16
-q16p16_aabb_intersect_tb.u_dut.tnear_final[31:0]
 @40000420
 [fpshift_count] 16
+q16p16_aabb_intersect_tb.u_dut.tnear_final[31:0]
+[fpshift_count] 16
 q16p16_aabb_intersect_tb.u_dut.tfar_final[31:0]
+@29
+q16p16_aabb_intersect_tb.u_dut.valid_o
 [pattern_trace] 1
 [pattern_trace] 0

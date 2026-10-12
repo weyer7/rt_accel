@@ -95,7 +95,7 @@ syn_%: check_env
 sim_%_syn: syn_%
 	@echo -e "Compiling synthesized design...\n"
 	@mkdir -p $(BUILD) && rm -rf $(BUILD)/*
-	@iverilog -g2012 -o $(BUILD)/$*_tb -DFUNCTIONAL -DUNIT_DELAY=#1 $(TB)/$*_tb.sv $(MAP)/$*.v $(VERILOG)
+	@iverilog -g2012 -o $(BUILD)/$*_tb -I $(SRC) -DFUNCTIONAL -DUNIT_DELAY=#1 $(TB)/$*_tb.sv $(MAP)/$*.v $(VERILOG)
 	@echo -e "\nCompilation complete!\n"
 	@echo -e "Simulating synthesized design...\n\n"
 	@vvp -l vvp_sim.log $(BUILD)/$*_tb
