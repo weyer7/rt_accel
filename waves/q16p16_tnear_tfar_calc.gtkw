@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon Oct 12 01:19:44 2026
+[*]
+[dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_tnear_tfar_calc.vcd"
+[dumpfile_mtime] "Mon Oct 12 01:16:53 2026"
+[dumpfile_size] 14624
+[savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_tnear_tfar_calc.gtkw"
+[timestart] 0
+[size] 2560 1481
+[pos] -27 -24
+*-18.577539 1644000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 297
+[signals_width] 190
+[sst_expanded] 1
+[sst_vpaned_height] 465
+@28
+q16p16_tnear_tfar_calc_tb.clk
+q16p16_tnear_tfar_calc_tb.n_rst
+q16p16_tnear_tfar_calc_tb.ready_i
+@200
+-Inputs
+@40000024
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmax_x[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmax_y[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmax_z[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmin_x[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmin_y[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tmin_z[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.request_tmax_i[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.request_tmin_i[31:0]
+@28
+q16p16_tnear_tfar_calc_tb.valid_i
+q16p16_tnear_tfar_calc_tb.ready_o
+@200
+-Outputs
+@40000024
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tnear_o[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.tfar_o[31:0]
+@40000025
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.request_tmax_o[31:0]
+[fpshift_count] 16
+q16p16_tnear_tfar_calc_tb.request_tmin_o[31:0]
+@28
+q16p16_tnear_tfar_calc_tb.valid_o
+[pattern_trace] 1
+[pattern_trace] 0
