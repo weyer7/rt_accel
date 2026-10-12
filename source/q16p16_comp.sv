@@ -1,5 +1,5 @@
 `default_nettype none
-`include "rtu_pkg.svh"
+// `include "rtu_pkg.svh"
 module q16p16_comp (
     input logic clk, n_rst,
 
