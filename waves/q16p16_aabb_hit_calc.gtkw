@@ -1,0 +1,83 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon Oct 12 01:57:15 2026
+[*]
+[dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_aabb_hit_calc.vcd"
+[dumpfile_mtime] "Mon Oct 12 01:54:39 2026"
+[dumpfile_size] 7786
+[savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/q16p16_aabb_hit_calc.gtkw"
+[timestart] 0
+[size] 2560 1481
+[pos] -27 -24
+*-18.613163 493000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] q16p16_aabb_hit_calc_tb.
+[sst_width] 297
+[signals_width] 190
+[sst_expanded] 1
+[sst_vpaned_height] 465
+@28
+q16p16_aabb_hit_calc_tb.clk
+q16p16_aabb_hit_calc_tb.n_rst
+@200
+-Inputs
+@40000420
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.tnear_i[31:0]
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.tfar_i[31:0]
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.request_tmax_i[31:0]
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.request_tmin_i[31:0]
+@28
+q16p16_aabb_hit_calc_tb.valid_i
+q16p16_aabb_hit_calc_tb.ready_o
+@200
+-Outputs
+@40c00420
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+@28
+(0)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(1)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(2)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(3)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(4)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(5)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(6)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(7)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(8)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(9)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(10)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(11)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(12)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(13)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(14)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(15)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(16)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(17)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(18)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(19)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(20)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(21)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(22)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(23)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(24)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(25)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(26)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(27)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(28)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(29)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(30)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+(31)q16p16_aabb_hit_calc_tb.tnear_o[31:0]
+@1401200
+-group_end
+@40000420
+[fpshift_count] 16
+q16p16_aabb_hit_calc_tb.tfar_o[31:0]
+@28
+q16p16_aabb_hit_calc_tb.hit
+q16p16_aabb_hit_calc_tb.valid_o
+q16p16_aabb_hit_calc_tb.ready_i
+[pattern_trace] 1
+[pattern_trace] 0
