@@ -1,0 +1,159 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Fri Oct 30 17:58:41 2026
+[*]
+[dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.vcd"
+[dumpfile_mtime] "Fri Oct 30 17:58:34 2026"
+[dumpfile_size] 985562
+[savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.gtkw"
+[timestart] 0
+[size] 2560 1481
+[pos] -1 -1
+*-18.621201 804000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] traversal_controller_tb.
+[sst_width] 297
+[signals_width] 246
+[sst_expanded] 1
+[sst_vpaned_height] 465
+@420
+traversal_controller_tb.u_dut.BVH_NODE_BYTES
+traversal_controller_tb.u_dut.STACK_DEPTH
+traversal_controller_tb.u_dut.STACK_PTR_WIDTH
+traversal_controller_tb.u_dut.TRIANGLE_STRIDE_BYTES
+@28
+traversal_controller_tb.u_dut._sv2v_0
+@22
+traversal_controller_tb.u_dut.aabb_req_o[551:0]
+@28
+traversal_controller_tb.u_dut.aabb_req_ready_i
+traversal_controller_tb.u_dut.aabb_req_valid_o
+@22
+traversal_controller_tb.u_dut.aabb_result_i[72:0]
+@28
+traversal_controller_tb.u_dut.aabb_result_valid_i
+traversal_controller_tb.u_dut.best_facing_front_d
+traversal_controller_tb.u_dut.best_facing_front_q
+traversal_controller_tb.u_dut.best_hit_d
+traversal_controller_tb.u_dut.best_hit_q
+@22
+traversal_controller_tb.u_dut.best_primitive_id_d[15:0]
+traversal_controller_tb.u_dut.best_primitive_id_q[15:0]
+traversal_controller_tb.u_dut.best_t_d[31:0]
+traversal_controller_tb.u_dut.best_t_q[31:0]
+traversal_controller_tb.u_dut.best_u_d[31:0]
+traversal_controller_tb.u_dut.best_u_q[31:0]
+traversal_controller_tb.u_dut.best_v_d[31:0]
+traversal_controller_tb.u_dut.best_v_q[31:0]
+traversal_controller_tb.u_dut.bvh_mem_req_addr_o[31:0]
+@28
+traversal_controller_tb.u_dut.bvh_mem_req_ready_i
+traversal_controller_tb.u_dut.bvh_mem_req_valid_o
+@22
+traversal_controller_tb.u_dut.bvh_mem_resp_data_i[255:0]
+@28
+traversal_controller_tb.u_dut.bvh_mem_resp_error_i
+traversal_controller_tb.u_dut.bvh_mem_resp_valid_i
+@22
+traversal_controller_tb.u_dut.bvh_root_d[31:0]
+traversal_controller_tb.u_dut.bvh_root_q[31:0]
+@28
+traversal_controller_tb.u_dut.clk
+traversal_controller_tb.u_dut.cmp_a_gt_b
+traversal_controller_tb.u_dut.cmp_a_lt_b
+@22
+traversal_controller_tb.u_dut.cmp_operand_a[31:0]
+traversal_controller_tb.u_dut.cmp_operand_b[31:0]
+@28
+traversal_controller_tb.u_dut.cmp_ready_i
+traversal_controller_tb.u_dut.cmp_ready_o
+traversal_controller_tb.u_dut.cmp_valid_i
+traversal_controller_tb.u_dut.cmp_valid_o
+@22
+traversal_controller_tb.u_dut.context_id_d[7:0]
+traversal_controller_tb.u_dut.context_id_q[7:0]
+traversal_controller_tb.u_dut.current_node_addr_d[31:0]
+traversal_controller_tb.u_dut.current_node_addr_q[31:0]
+traversal_controller_tb.u_dut.current_node_d[255:0]
+traversal_controller_tb.u_dut.current_node_q[255:0]
+traversal_controller_tb.u_dut.current_t_near_d[31:0]
+traversal_controller_tb.u_dut.current_t_near_q[31:0]
+traversal_controller_tb.u_dut.current_triangle_d[303:0]
+traversal_controller_tb.u_dut.current_triangle_q[303:0]
+@23
+traversal_controller_tb.u_dut.left_child_d[255:0]
+@22
+traversal_controller_tb.u_dut.left_child_q[255:0]
+@28
+traversal_controller_tb.u_dut.left_hit_d
+traversal_controller_tb.u_dut.left_hit_q
+@22
+traversal_controller_tb.u_dut.left_t_near_d[31:0]
+traversal_controller_tb.u_dut.left_t_near_q[31:0]
+traversal_controller_tb.u_dut.pending_tri_result_d[121:0]
+traversal_controller_tb.u_dut.pending_tri_result_q[121:0]
+traversal_controller_tb.u_dut.ray_direction_d[95:0]
+traversal_controller_tb.u_dut.ray_direction_q[95:0]
+traversal_controller_tb.u_dut.ray_inv_direction_d[95:0]
+traversal_controller_tb.u_dut.ray_inv_direction_q[95:0]
+traversal_controller_tb.u_dut.ray_origin_d[95:0]
+traversal_controller_tb.u_dut.ray_origin_q[95:0]
+traversal_controller_tb.u_dut.ray_t_min_d[31:0]
+traversal_controller_tb.u_dut.ray_t_min_q[31:0]
+traversal_controller_tb.u_dut.right_child_d[255:0]
+traversal_controller_tb.u_dut.right_child_q[255:0]
+@28
+traversal_controller_tb.u_dut.right_hit_d
+traversal_controller_tb.u_dut.right_hit_q
+@22
+traversal_controller_tb.u_dut.right_t_near_d[31:0]
+traversal_controller_tb.u_dut.right_t_near_q[31:0]
+@28
+traversal_controller_tb.u_dut.rst_n
+traversal_controller_tb.u_dut.stack_overflow_d
+traversal_controller_tb.u_dut.stack_overflow_o
+traversal_controller_tb.u_dut.stack_overflow_q
+@22
+traversal_controller_tb.u_dut.stack_ptr_d[4:0]
+traversal_controller_tb.u_dut.stack_ptr_q[4:0]
+@24
+traversal_controller_tb.u_dut.state_d[4:0]
+traversal_controller_tb.u_dut.state_q[4:0]
+@22
+traversal_controller_tb.u_dut.traversal_i[439:0]
+@28
+traversal_controller_tb.u_dut.traversal_ready_o
+@22
+traversal_controller_tb.u_dut.traversal_result_o[112:0]
+@28
+traversal_controller_tb.u_dut.traversal_result_ready_i
+traversal_controller_tb.u_dut.traversal_result_valid_o
+traversal_controller_tb.u_dut.traversal_valid_i
+@22
+traversal_controller_tb.u_dut.tri_addr_d[31:0]
+traversal_controller_tb.u_dut.tri_addr_q[31:0]
+traversal_controller_tb.u_dut.tri_index_d[31:0]
+traversal_controller_tb.u_dut.tri_index_q[31:0]
+traversal_controller_tb.u_dut.tri_mem_req_addr_o[31:0]
+@28
+traversal_controller_tb.u_dut.tri_mem_req_ready_i
+traversal_controller_tb.u_dut.tri_mem_req_valid_o
+@22
+traversal_controller_tb.u_dut.tri_mem_resp_data_i[303:0]
+@28
+traversal_controller_tb.u_dut.tri_mem_resp_error_i
+traversal_controller_tb.u_dut.tri_mem_resp_valid_i
+@22
+traversal_controller_tb.u_dut.tri_req_o[663:0]
+@28
+traversal_controller_tb.u_dut.tri_req_ready_i
+traversal_controller_tb.u_dut.tri_req_valid_o
+@22
+traversal_controller_tb.u_dut.tri_result_i[121:0]
+@28
+traversal_controller_tb.u_dut.tri_result_valid_i
+@420
+traversal_controller_tb.test_case
+traversal_controller_tb.tri_intersection_count
+traversal_controller_tb.aabb_request_count
+[pattern_trace] 1
+[pattern_trace] 0

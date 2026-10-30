@@ -15,18 +15,18 @@
     //basic types
     //=====================================
 
-`ifdef FP //a bit corny, but works
-    //raw IEEE-754 single-precision floating-point representation.
-    typedef struct packed {
-        logic sign;
-        logic [7:0] exponent;
-        logic [22:0] mantissa;
-    } fp32_t;
-`else
+// `ifdef FP //a bit corny, but works
+//     //raw IEEE-754 single-precision floating-point representation.
+//     typedef struct packed {
+//         logic sign;
+//         logic [7:0] exponent;
+//         logic [22:0] mantissa;
+//     } fp32_t;
+// `else
     typedef struct packed {
         logic [31:0] data;
     } fp32_t;
-`endif
+// `endif
 
     typedef logic [31:0] addr_t;
 
@@ -164,10 +164,16 @@
 
     typedef struct packed {
         ray_request_t ray;
+        logic [7:0] context_id;
+        addr_t        bvh_root;
+        float3_t      inv_direction;
+        fp32_t        t_min;
+        fp32_t        t_max;
     } traversal_request_t;
 
 
     typedef struct packed {
+        logic hit; //necessary as 16.16 has no representation of infinity
         primitive_id_t primitive_id;
         fp32_t distance;
         //barycentric coordinates.
@@ -207,14 +213,15 @@
         float3_t direction;
         float3_t inv_direction;
 
-        fp32_t t_min;
-        fp32_t t_max;
+        fp32_t t_min; //from request
+        fp32_t t_max; //from request
+        fp32_t distance; //current closest hit (could be stored in t_max, but useful for debugging when separate)
 
         //current closest intersection.
         logic          hit;
         logic          facing_front;
         primitive_id_t primitive_id;
-        fp32_t         distance;
+        // fp32_t         distance;
 
         //barycentric coordinates of closest hit.
         fp32_t bary_u;

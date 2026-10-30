@@ -130,7 +130,7 @@ module q16p16_aabb_intersect (
     // Match total pipeline latency to pipe context_id along with the data
     
     // Determine total latency stages across axis, tnear/tfar, and hit calc
-    localparam int TOTAL_LATENCY = 10; // Adjust based on internal submodule depths if needed
+    localparam int TOTAL_LATENCY = 19; // Adjust based on internal submodule depths if needed
     
     logic [7:0] context_id_pipe [TOTAL_LATENCY-1:0];
     logic       stall;

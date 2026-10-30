@@ -1,5 +1,6 @@
 `default_nettype none
 `include "rtu_pkg.svh"
+`define MULT_OPT
 module q16p16_tmin_tmax_calc (
     input logic clk, n_rst,
 
@@ -88,6 +89,60 @@ module q16p16_tmin_tmax_calc (
         end
     end
 
+`ifdef MULT_OPT
+    //3
+    logic [31:0] t0;
+    logic t0_valid;
+    logic comp_ready;
+    q16p16_mult_opt t0_calc (.*, .operand_a(amo), .operand_b(inv_dir1),
+        .ready_o(t0_ready), .valid_i(amo_valid), 
+        .product(t0), .valid_o(t0_valid), .ready_i(comp_ready)
+    );
+
+    //4
+    logic [31:0] t1;
+    logic t1_valid;
+    q16p16_mult_opt t1_calc (.*, .operand_a(bmo), .operand_b(inv_dir1),
+        .ready_o(t1_ready), .valid_i(bmo_valid), 
+        .product(t1), .valid_o(), .ready_i(comp_ready)
+    );
+
+    //bypass reg for signals passing over steps 3 and 4
+    //the multipliers also have two pipe stages
+    logic [31:0] req_tmax2, req_tmax3, req_tmax4, req_tmax5, req_tmax6, req_tmax7, req_tmax8, req_tmax9, req_tmax10, req_tmax11, req_tmax12;
+    logic [31:0] req_tmin2, req_tmin3, req_tmin4, req_tmin5, req_tmin6, req_tmin7, req_tmin8, req_tmin9, req_tmin10, req_tmin11, req_tmin12;
+    always_ff @(posedge clk, negedge n_rst) begin
+        if (!n_rst) begin
+            req_tmax2 <= '0; req_tmax3 <= '0; req_tmax4 <= '0; req_tmax5 <= '0; req_tmax6 <= '0; req_tmax7 <= '0; req_tmax8 <= '0; req_tmax9 <= '0; req_tmax10 <= '0; req_tmax11 <= '0; req_tmax12 <= '0;
+            req_tmin2 <= '0; req_tmin3 <= '0; req_tmin4 <= '0; req_tmin5 <= '0; req_tmin6 <= '0; req_tmin7 <= '0; req_tmin8 <= '0; req_tmin9 <= '0; req_tmin10 <= '0; req_tmin11 <= '0; req_tmin12 <= '0;
+        end else if (!stall) begin
+            //no gating yet, can add later
+            req_tmax2 <=  req_tmax1;
+            req_tmax3 <=  req_tmax2;
+            req_tmax4 <=  req_tmax3;
+            req_tmax5 <=  req_tmax4;
+            req_tmax6 <=  req_tmax5;
+            req_tmax7 <=  req_tmax6;
+            req_tmax8 <=  req_tmax7;
+            req_tmax9 <=  req_tmax8;
+            req_tmax10 <= req_tmax9;
+            req_tmax11 <= req_tmax10;
+            req_tmax12 <= req_tmax11;
+
+            req_tmin2 <=  req_tmin1;
+            req_tmin3 <=  req_tmin2;
+            req_tmin4 <=  req_tmin3;
+            req_tmin5 <=  req_tmin4;
+            req_tmin6 <=  req_tmin5;
+            req_tmin7 <=  req_tmin6;
+            req_tmin8 <=  req_tmin7;
+            req_tmin9 <=  req_tmin8;
+            req_tmin10 <= req_tmin9;
+            req_tmin11 <= req_tmin10;
+            req_tmin12 <= req_tmin11;
+        end
+    end
+`else
     //3
     logic [31:0] t0;
     logic t0_valid;
@@ -123,6 +178,7 @@ module q16p16_tmin_tmax_calc (
             req_tmin3 <= req_tmin2;
         end
     end
+`endif
 
     //5
     logic t0_gt_t1, t0_lt_t1;
@@ -135,26 +191,45 @@ module q16p16_tmin_tmax_calc (
 
     //bypass reg for signals passing over step 5
     //the comparator also has two pipe stages
+`ifdef MULT_OPT
+    logic [31:0] req_tmax13, req_tmax14;
+    logic [31:0] req_tmin13, req_tmin14;
+`else
     logic [31:0] req_tmax4, req_tmax5;
     logic [31:0] req_tmin4, req_tmin5;
+`endif
     logic [31:0] t0_0, t0_1;
     logic [31:0] t1_0, t1_1;
     always_ff @(posedge clk, negedge n_rst) begin
         if (!n_rst) begin
+`ifdef MULT_OPT
+            req_tmax13 <= '0;
+            req_tmax14 <= '0;
+            req_tmin13 <= '0;
+            req_tmin14 <= '0;
+`else
             req_tmax4 <= '0;
             req_tmax5 <= '0;
             req_tmin4 <= '0;
             req_tmin5 <= '0;
+`endif
             t0_0 <= '0;
             t0_1 <= '0;
             t1_0 <= '0;
             t1_1 <= '0;
         end else if (!stall) begin
             //no gating yet, can add later
+`ifdef MULT_OPT
+            req_tmax13 <= req_tmax12;
+            req_tmax14 <= req_tmax13;
+            req_tmin13 <= req_tmin12;
+            req_tmin14 <= req_tmin13;
+`else
             req_tmax4 <= req_tmax3;
             req_tmax5 <= req_tmax4;
             req_tmin4 <= req_tmin3;
             req_tmin5 <= req_tmin4;
+`endif
             t0_0 <= t0;
             t0_1 <= t0_0;
             t1_0 <= t1;
@@ -162,8 +237,13 @@ module q16p16_tmin_tmax_calc (
         end
     end
 
+`ifdef MULT_OPT
+    assign request_tmax_o = req_tmax14;
+    assign request_tmin_o = req_tmin14;
+`else
     assign request_tmax_o = req_tmax5;
     assign request_tmin_o = req_tmin5;
+`endif
 
     //6 (select max based on comp result)
     assign tmin_o = t0_gt_t1 ? t1_1 : t0_1; //select min
