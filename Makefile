@@ -209,3 +209,7 @@ veryclean: clean
 	@rm -rf $(PDK_ROOT) &&\
 	echo -e "PDK files removed!\n"
 
+# RTU-specific targets
+.PHONY: rt-ref-%-tris
+rt-ref-%-tris:
+	python3 testbench/scripts/run_traversal_reference.py model/assets/random_$*.tri testbench/inputs/sample_reference_rays.csv --project-dir . --exporter model/util/export_bvh_mem --reference-runner model/util/rtu_reference_runner

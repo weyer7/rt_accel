@@ -1,0 +1,4 @@
+# One ray per line: ox,oy,oz,dx,dy,dz,t_min,t_max
+# These are illustrative; choose rays that intersect your particular mesh.
+-0.375,-0.375,0.0,0.125,0.125,1.0,0.0,100.0
+8.0,8.0,0.0,0.125,0.125,1.0,0.0,100.0

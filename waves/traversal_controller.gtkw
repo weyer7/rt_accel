@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Fri Oct 30 19:18:33 2026
+[*] Fri Oct 30 19:59:56 2026
 [*]
 [dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.vcd"
-[dumpfile_mtime] "Fri Oct 30 19:18:06 2026"
-[dumpfile_size] 1949521
+[dumpfile_mtime] "Fri Oct 30 19:59:47 2026"
+[dumpfile_size] 2053693
 [savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.gtkw"
 [timestart] 0
 [size] 2560 1481
 [pos] -1 -1
-*-19.827051 3232000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.922108 3845000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] traversal_controller_tb.
 [sst_width] 297
 [signals_width] 246

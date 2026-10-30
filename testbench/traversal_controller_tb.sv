@@ -14,8 +14,11 @@ module traversal_controller_tb #(
     parameter integer MAX_TRIANGLES = 4096,
     parameter integer STACK_DEPTH = 16,
     parameter integer TRAVERSAL_TIMEOUT_CYCLES = 1000000,
-    parameter BVH_DATA_FILE = "/home/ajwey/Purdue/SoCET/GPU/rt_accel/model/util/bvh_nodes.hex",
-    parameter TRI_DATA_FILE = "/home/ajwey/Purdue/SoCET/GPU/rt_accel/model/util/triangles.hex",
+    parameter BVH_DATA_FILE = "bvh_nodes.hex",
+    parameter TRI_DATA_FILE = "triangles.hex",
+    parameter REFERENCE_RAY_FILE = "reference_rays.hex",
+    parameter REFERENCE_RESULT_FILE = "reference_results.hex",
+    parameter REFERENCE_ENABLE_FILE = ".reference_run.enable",
     parameter integer RUN_FILE_TEST = 1,
     parameter real FILE_RAY_OX = -0.375,
     parameter real FILE_RAY_OY = -0.375,
@@ -33,7 +36,7 @@ module traversal_controller_tb #(
     parameter integer FILE_EXPECT_PRIMITIVE = -1,
     parameter integer MEM_LATENCY = 2,
     parameter integer TRI_MODEL_LATENCY = 2,
-    parameter integer DEBUG_LEVEL = 1,
+    parameter integer DEBUG_LEVEL = 0,
     parameter integer DUMP_WAVES = 1
 );
     localparam integer NODE_COUNT = MAX_NODES;
@@ -89,6 +92,7 @@ module traversal_controller_tb #(
     integer tri_intersection_count;
     integer test_case;
     integer error_count;
+    integer reference_error_count;
     integer bvh_before, tri_mem_before, aabb_before, tri_before;
     traversal_result_t result;
     traversal_request_t test_req;
@@ -962,6 +966,174 @@ module traversal_controller_tb #(
         end
     endtask
 
+    task automatic reference_fail(input string message);
+        begin
+            reference_error_count = reference_error_count + 1;
+            error_count = error_count + 1;
+            $display("[REF][FAIL][RAY %0d] %s", test_case - 1000, message);
+        end
+    endtask
+
+    task automatic check_reference_q16(
+        input string field_name,
+        input fp32_t actual,
+        input logic [31:0] expected_word,
+        input integer tolerance_lsb
+    );
+        integer signed actual_s;
+        integer signed expected_s;
+        integer signed delta;
+        begin
+            actual_s = $signed(actual.data);
+            expected_s = $signed(expected_word);
+            delta = actual_s - expected_s;
+            if ((delta > tolerance_lsb) || (delta < -tolerance_lsb)) begin
+                reference_fail($sformatf(
+                    "%s mismatch: RTL=%0d (%.6f), C=%0d (%.6f), delta=%0d LSB",
+                    field_name, actual_s, $itor(actual_s)/65536.0,
+                    expected_s, $itor(expected_s)/65536.0, delta));
+            end
+        end
+    endtask
+
+    // The Python driver creates REFERENCE_ENABLE_FILE only while a comparison
+    // run is active. This runtime marker means the existing Make target does
+    // not need new compile-time parameter overrides.
+    task automatic run_reference_file_tests_if_enabled;
+        integer marker_fd;
+        integer ray_fd;
+        integer result_fd;
+        integer tolerance_lsb;
+        integer read_count;
+        integer ray_count;
+        integer result_count;
+        integer i;
+        reg [31:0] ray_id;
+        reg [31:0] ox, oy, oz;
+        reg [31:0] dx, dy, dz;
+        reg [31:0] inv_dx, inv_dy, inv_dz;
+        reg [31:0] t_min_word, t_max_word;
+        reg [31:0] expected_ray_id;
+        reg [31:0] expected_hit;
+        reg [31:0] expected_primitive;
+        reg [31:0] expected_distance;
+        reg [31:0] expected_u;
+        reg [31:0] expected_v;
+        traversal_request_t reference_req;
+        begin
+            marker_fd = $fopen(REFERENCE_ENABLE_FILE, "r");
+            if (marker_fd == 0) begin
+                $display("[REF] No comparison marker found; skipping C-reference tests");
+            end else begin
+                read_count = $fscanf(marker_fd, "%d", tolerance_lsb);
+                $fclose(marker_fd);
+                if (read_count != 1 || tolerance_lsb < 0)
+                    $fatal(1, "Invalid tolerance in %s", REFERENCE_ENABLE_FILE);
+
+                $display("\n[REF] Starting C-reference comparison (tolerance=%0d Q16.16 LSB)",
+                         tolerance_lsb);
+                reference_error_count = 0;
+                load_scene_from_files(BVH_DATA_FILE, TRI_DATA_FILE);
+
+                ray_fd = $fopen(REFERENCE_RAY_FILE, "r");
+                if (ray_fd == 0)
+                    $fatal(1, "Could not open C-reference ray file: %s", REFERENCE_RAY_FILE);
+                result_fd = $fopen(REFERENCE_RESULT_FILE, "r");
+                if (result_fd == 0)
+                    $fatal(1, "Could not open C-reference result file: %s", REFERENCE_RESULT_FILE);
+
+                read_count = $fscanf(ray_fd, "%d", ray_count);
+                if (read_count != 1 || ray_count < 1)
+                    $fatal(1, "Invalid ray-count header in %s", REFERENCE_RAY_FILE);
+                read_count = $fscanf(result_fd, "%d", result_count);
+                if (read_count != 1 || result_count != ray_count)
+                    $fatal(1, "Reference result count (%0d) does not match ray count (%0d)",
+                           result_count, ray_count);
+
+                for (i = 0; i < ray_count; i = i + 1) begin
+                    read_count = $fscanf(ray_fd,
+                        "%h %h %h %h %h %h %h %h %h %h %h %h",
+                        ray_id, ox, oy, oz, dx, dy, dz,
+                        inv_dx, inv_dy, inv_dz, t_min_word, t_max_word);
+                    if (read_count != 12)
+                        $fatal(1, "Malformed ray record %0d in %s (read %0d/12 words)",
+                               i, REFERENCE_RAY_FILE, read_count);
+
+                    read_count = $fscanf(result_fd, "%h %h %h %h %h %h",
+                        expected_ray_id, expected_hit, expected_primitive,
+                        expected_distance, expected_u, expected_v);
+                    if (read_count != 6)
+                        $fatal(1, "Malformed reference result %0d in %s (read %0d/6 words)",
+                               i, REFERENCE_RESULT_FILE, read_count);
+
+                    reference_req = '0;
+                    reference_req.ray.ray_id = ray_id[15:0];
+                    reference_req.ray.origin.x.data = ox;
+                    reference_req.ray.origin.y.data = oy;
+                    reference_req.ray.origin.z.data = oz;
+                    reference_req.ray.direction.x.data = dx;
+                    reference_req.ray.direction.y.data = dy;
+                    reference_req.ray.direction.z.data = dz;
+                    reference_req.context_id = i;
+                    reference_req.bvh_root = BVH_BASE;
+                    reference_req.inv_direction.x.data = inv_dx;
+                    reference_req.inv_direction.y.data = inv_dy;
+                    reference_req.inv_direction.z.data = inv_dz;
+                    reference_req.t_min.data = t_min_word;
+                    reference_req.t_max.data = t_max_word;
+
+                    test_case = 1000 + i;
+                    reset_counts();
+                    bvh_before = bvh_read_count;
+                    tri_mem_before = tri_mem_read_count;
+                    aabb_before = aabb_request_count;
+                    tri_before = tri_intersection_count;
+                    $display("\n[REF][RAY %0d] ray_id=%0d O=(%.5f,%.5f,%.5f) D=(%.5f,%.5f,%.5f) t=[%.5f,%.5f]",
+                        i, ray_id,
+                        q16_to_real(ox), q16_to_real(oy), q16_to_real(oz),
+                        q16_to_real(dx), q16_to_real(dy), q16_to_real(dz),
+                        q16_to_real(t_min_word), q16_to_real(t_max_word));
+
+                    run_traversal(reference_req, result);
+
+                    if (ray_id !== expected_ray_id)
+                        reference_fail($sformatf("ray ID mismatch: request=%08h C result=%08h",
+                                                 ray_id, expected_ray_id));
+                    if (result.hit !== (expected_hit != 0))
+                        reference_fail($sformatf("hit mismatch: RTL=%0b C=%0b",
+                                                 result.hit, (expected_hit != 0)));
+
+                    if (expected_hit != 0) begin
+                        if (result.primitive_id !== expected_primitive[15:0])
+                            reference_fail($sformatf("primitive mismatch: RTL=%0d C=%0d",
+                                result.primitive_id, expected_primitive[15:0]));
+                        check_reference_q16("signed distance", result.distance,
+                                             expected_distance, tolerance_lsb);
+                        check_reference_q16("barycentric u", result.u,
+                                             expected_u, tolerance_lsb);
+                        check_reference_q16("barycentric v", result.v,
+                                             expected_v, tolerance_lsb);
+                    end
+
+                    $display("[REF][RAY %0d] C expected: hit=%0d prim=%0d t=%.6f u=%.6f v=%.6f",
+                        i, expected_hit, expected_primitive[15:0],
+                        q16_to_real(expected_distance),
+                        q16_to_real(expected_u), q16_to_real(expected_v));
+                    report_test_summary("C-reference comparison", result);
+                end
+
+                $fclose(ray_fd);
+                $fclose(result_fd);
+                if (reference_error_count == 0)
+                    $display("\n[REF] PASS: all %0d ray(s) match the C reference within %0d LSB",
+                             ray_count, tolerance_lsb);
+                else
+                    $display("\n[REF] FAIL: %0d mismatch(es) across %0d ray(s)",
+                             reference_error_count, ray_count);
+            end
+        end
+    endtask
+
     initial begin
         if (DUMP_WAVES != 0) begin
             $dumpfile("waves/traversal_controller.vcd");
@@ -975,6 +1147,7 @@ module traversal_controller_tb #(
     initial begin
         test_case = 0;
         error_count = 0;
+        reference_error_count = 0;
         loaded_node_count = 0;
         loaded_tri_count = 0;
         if (NODE_BYTES != 32)
@@ -1303,6 +1476,8 @@ module traversal_controller_tb #(
                             "File-scene traversal did not read the BVH root");
             report_test_summary("file-imported scene", result);
         end
+
+        run_reference_file_tests_if_enabled();
 
         if (error_count == 0)
             $display("\nPASS: all traversal integration checks passed");
