@@ -1,23 +1,43 @@
 `timescale 1ns/1ps
 `include "rtu_pkg.svh"
 
-/*
-
-Initial integration testbench for bvh_traversal_controller.
-Prototyped with ChatGPT
-Will add file parsing in the future to accept BVH files and compare
-RTL with software reference (similar to 437 test environment)
-*/
-module traversal_controller_tb;
-    localparam addr_t BVH_BASE = 32'h1000_0000;
-    localparam addr_t TRI_BASE = 32'h2000_0000;
-    localparam int NODE_BYTES = 32;
-    localparam int TRI_STRIDE = 40; // must match controller parameter
-    localparam int NODE_COUNT = 8;
-    localparam int TRI_COUNT = 8;
-    localparam int MEM_LATENCY = 2;
-    localparam int TRI_MODEL_LATENCY = 2;
-    localparam int DEBUG_LEVEL = 1; // 0=quiet, 1=transaction trace
+// Integration testbench for bvh_traversal_controller, including optional file import.
+// Prototyped with ChatGPT
+// Compile this simulation harness directly with a simulator; do not run the
+// testbench or DPI C model through sv2v. Keep sv2v limited to synthesizable RTL.
+module traversal_controller_tb #(
+    parameter logic [31:0] BVH_BASE = 32'h1000_0000,
+    parameter logic [31:0] TRI_BASE = 32'h2000_0000,
+    parameter integer NODE_BYTES = 32,
+    parameter integer TRI_STRIDE = 40,
+    parameter integer MAX_NODES = 8192,
+    parameter integer MAX_TRIANGLES = 4096,
+    parameter integer STACK_DEPTH = 16,
+    parameter integer TRAVERSAL_TIMEOUT_CYCLES = 1000000,
+    parameter BVH_DATA_FILE = "/home/ajwey/Purdue/SoCET/GPU/rt_accel/model/util/bvh_nodes.hex",
+    parameter TRI_DATA_FILE = "/home/ajwey/Purdue/SoCET/GPU/rt_accel/model/util/triangles.hex",
+    parameter integer RUN_FILE_TEST = 1,
+    parameter real FILE_RAY_OX = -0.375,
+    parameter real FILE_RAY_OY = -0.375,
+    parameter real FILE_RAY_OZ = 0.0,
+    parameter real FILE_RAY_DX = 0.125,
+    parameter real FILE_RAY_DY = 0.125,
+    parameter real FILE_RAY_DZ = 1.0,
+    parameter real FILE_RAY_INV_DX = 8.0,
+    parameter real FILE_RAY_INV_DY = 8.0,
+    parameter real FILE_RAY_INV_DZ = 1.0,
+    parameter real FILE_T_MIN = 0.0,
+    parameter real FILE_T_MAX = 100.0,
+    // -1 disables the corresponding expected-result check.
+    parameter integer FILE_EXPECT_HIT = -1,
+    parameter integer FILE_EXPECT_PRIMITIVE = -1,
+    parameter integer MEM_LATENCY = 2,
+    parameter integer TRI_MODEL_LATENCY = 2,
+    parameter integer DEBUG_LEVEL = 1,
+    parameter integer DUMP_WAVES = 1
+);
+    localparam integer NODE_COUNT = MAX_NODES;
+    localparam integer TRI_COUNT = MAX_TRIANGLES;
 
     logic clk = 1'b0;
     logic rst_n = 1'b0;
@@ -60,6 +80,8 @@ module traversal_controller_tb;
     triangle_t tri_mem [0:TRI_COUNT-1];
     logic [NODE_COUNT-1:0] node_present;
     logic [TRI_COUNT-1:0] tri_present;
+    integer loaded_node_count;
+    integer loaded_tri_count;
 
     integer bvh_read_count;
     integer tri_mem_read_count;
@@ -72,7 +94,7 @@ module traversal_controller_tb;
     traversal_request_t test_req;
 
     traversal_controller #(
-        .STACK_DEPTH(16),
+        .STACK_DEPTH(STACK_DEPTH),
         .TRIANGLE_STRIDE_BYTES(TRI_STRIDE)
     ) u_dut (
         .clk(clk), .rst_n(rst_n),
@@ -483,6 +505,8 @@ module traversal_controller_tb;
 
             tri_mem[idx] = temp;
             tri_present[idx] = 1'b1;
+            if (idx + 1 > loaded_tri_count)
+                loaded_tri_count = idx + 1;
         end
     endtask
 
@@ -510,6 +534,8 @@ module traversal_controller_tb;
 
             node_mem[idx] = temp;
             node_present[idx] = 1'b1;
+            if (idx + 1 > loaded_node_count)
+                loaded_node_count = idx + 1;
         end
     endtask
 
@@ -521,7 +547,7 @@ module traversal_controller_tb;
         triangle_t tri_temp;
         begin
             $display("[SCENE] %s", label);
-            for (i = 0; i < NODE_COUNT; i = i + 1) begin
+            for (i = 0; i < loaded_node_count; i = i + 1) begin
                 if (node_present[i]) begin
                     node_temp = node_mem[i];
                     $display("[SCENE] node[%0d] addr=%08h leaf=%0b tri_count=%0d left_first=%08h boxMin=(%.4f,%.4f,%.4f) boxMax=(%.4f,%.4f,%.4f)",
@@ -536,7 +562,7 @@ module traversal_controller_tb;
                         q16_to_real(node_temp.box.corner_b.z.data));
                 end
             end
-            for (i = 0; i < TRI_COUNT; i = i + 1) begin
+            for (i = 0; i < loaded_tri_count; i = i + 1) begin
                 if (tri_present[i]) begin
                     tri_temp = tri_mem[i];
                     $display("[SCENE] tri[%0d] addr=%08h prim=%0d v0=(%.4f,%.4f,%.4f) v1=(%.4f,%.4f,%.4f) v2=(%.4f,%.4f,%.4f)",
@@ -566,6 +592,164 @@ module traversal_controller_tb;
                 tri_mem[i] = '0;
                 tri_present[i] = 1'b0;
             end
+            loaded_node_count = 0;
+            loaded_tri_count = 0;
+        end
+    endtask
+
+    // Import the word-oriented files emitted by export_bvh_mem.c.
+    // Each file starts with a decimal record count. All remaining fields are
+    // whitespace-separated hexadecimal words; geometry is signed Q16.16.
+    task automatic load_bvh_memory_file(input string filename);
+        integer fd;
+        integer file_count;
+        integer read_count;
+        integer i;
+        reg [31:0] w0, w1, w2, w3, w4, w5, w6, w7;
+        bvh_node_t temp;
+        begin
+            fd = $fopen(filename, "r");
+            if (fd == 0)
+                $fatal(1, "Could not open BVH data file: %s", filename);
+
+            read_count = $fscanf(fd, "%d", file_count);
+            if (read_count != 1)
+                $fatal(1, "BVH data file %s has no valid node-count header", filename);
+            if (file_count < 1 || file_count > MAX_NODES)
+                $fatal(1, "BVH file node count %0d exceeds valid range 1..%0d",
+                       file_count, MAX_NODES);
+
+            for (i = 0; i < file_count; i = i + 1) begin
+                read_count = $fscanf(fd, "%h %h %h %h %h %h %h %h",
+                                     w0, w1, w2, w3, w4, w5, w6, w7);
+                if (read_count != 8)
+                    $fatal(1, "Malformed BVH record %0d in %s (read %0d/8 words)",
+                           i, filename, read_count);
+
+                temp = '0;
+                temp.box.corner_a.x.data = w0;
+                temp.box.corner_a.y.data = w1;
+                temp.box.corner_a.z.data = w2;
+                temp.box.corner_b.x.data = w3;
+                temp.box.corner_b.y.data = w4;
+                temp.box.corner_b.z.data = w5;
+                temp.left_first = w6;
+                temp.tri_count = w7;
+                node_mem[i] = temp;
+                node_present[i] = 1'b1;
+            end
+
+            loaded_node_count = file_count;
+            $fclose(fd);
+            $display("[FILE] Loaded %0d BVH nodes from %s (base=%08h stride=%0d)",
+                     loaded_node_count, filename, BVH_BASE, NODE_BYTES);
+        end
+    endtask
+
+    task automatic load_triangle_memory_file(input string filename);
+        integer fd;
+        integer file_count;
+        integer read_count;
+        integer i;
+        reg [31:0] w0, w1, w2, w3, w4, w5, w6, w7, w8, w9;
+        triangle_t temp;
+        begin
+            fd = $fopen(filename, "r");
+            if (fd == 0)
+                $fatal(1, "Could not open triangle data file: %s", filename);
+
+            read_count = $fscanf(fd, "%d", file_count);
+            if (read_count != 1)
+                $fatal(1, "Triangle data file %s has no valid triangle-count header", filename);
+            if (file_count < 1 || file_count > MAX_TRIANGLES)
+                $fatal(1, "Triangle file count %0d exceeds valid range 1..%0d",
+                       file_count, MAX_TRIANGLES);
+
+            for (i = 0; i < file_count; i = i + 1) begin
+                read_count = $fscanf(fd, "%h %h %h %h %h %h %h %h %h %h",
+                                     w0, w1, w2, w3, w4, w5, w6, w7, w8, w9);
+                if (read_count != 10)
+                    $fatal(1, "Malformed triangle record %0d in %s (read %0d/10 words)",
+                           i, filename, read_count);
+
+                temp = '0;
+                temp.primitive_id = w0[15:0];
+                temp.vertex1.x.data = w1;
+                temp.vertex1.y.data = w2;
+                temp.vertex1.z.data = w3;
+                temp.vertex2.x.data = w4;
+                temp.vertex2.y.data = w5;
+                temp.vertex2.z.data = w6;
+                temp.vertex3.x.data = w7;
+                temp.vertex3.y.data = w8;
+                temp.vertex3.z.data = w9;
+                tri_mem[i] = temp;
+                tri_present[i] = 1'b1;
+            end
+
+            loaded_tri_count = file_count;
+            $fclose(fd);
+            $display("[FILE] Loaded %0d triangles from %s (base=%08h stride=%0d)",
+                     loaded_tri_count, filename, TRI_BASE, TRI_STRIDE);
+        end
+    endtask
+
+    task automatic validate_imported_scene;
+        integer i;
+        integer child_index;
+        integer triangle_index;
+        bvh_node_t node_temp;
+        begin
+            // This RTL encoding supports one triangle per leaf. Internal nodes
+            // have two consecutive child nodes; empty nodes have tri_count=0.
+            for (i = 0; i < loaded_node_count; i = i + 1) begin
+                node_temp = node_mem[i];
+                if (!node_present[i])
+                    $fatal(1, "Imported BVH node %0d is missing", i);
+
+                if (node_temp.tri_count > 1) begin
+                    if (node_temp.left_first < BVH_BASE)
+                        $fatal(1, "Internal node %0d has child pointer below BVH_BASE", i);
+                    if (((node_temp.left_first - BVH_BASE) % NODE_BYTES) != 0)
+                        $fatal(1, "Internal node %0d child pointer %08h is not %0d-byte aligned",
+                               i, node_temp.left_first, NODE_BYTES);
+                    child_index = (node_temp.left_first - BVH_BASE) / NODE_BYTES;
+                    if ((child_index < 0) || (child_index + 1 >= loaded_node_count))
+                        $fatal(1, "Internal node %0d child pair [%0d,%0d] exceeds %0d loaded nodes",
+                               i, child_index, child_index + 1, loaded_node_count);
+                end else if (node_temp.tri_count == 1) begin
+                    if (node_temp.left_first < TRI_BASE)
+                        $fatal(1, "Leaf node %0d has triangle pointer below TRI_BASE", i);
+                    if (((node_temp.left_first - TRI_BASE) % TRI_STRIDE) != 0)
+                        $fatal(1, "Leaf node %0d triangle pointer %08h is not %0d-byte aligned",
+                               i, node_temp.left_first, TRI_STRIDE);
+                    triangle_index = (node_temp.left_first - TRI_BASE) / TRI_STRIDE;
+                    if ((triangle_index < 0) || (triangle_index >= loaded_tri_count))
+                        $fatal(1, "Leaf node %0d references triangle %0d, but only %0d are loaded",
+                               i, triangle_index, loaded_tri_count);
+                end
+
+                if (($signed(node_temp.box.corner_a.x.data) > $signed(node_temp.box.corner_b.x.data)) ||
+                    ($signed(node_temp.box.corner_a.y.data) > $signed(node_temp.box.corner_b.y.data)) ||
+                    ($signed(node_temp.box.corner_a.z.data) > $signed(node_temp.box.corner_b.z.data)))
+                    $fatal(1, "Imported BVH node %0d has inverted AABB bounds", i);
+            end
+        end
+    endtask
+
+    task automatic load_scene_from_files(input string bvh_filename,
+                                         input string triangle_filename);
+        begin
+            clear_scene();
+            load_bvh_memory_file(bvh_filename);
+            load_triangle_memory_file(triangle_filename);
+            if (!node_present[0])
+                $fatal(1, "Imported BVH has no valid root node");
+            validate_imported_scene();
+            $display("[FILE] Scene ready: %0d nodes, %0d triangles; root=%08h",
+                     loaded_node_count, loaded_tri_count, BVH_BASE);
+            if (DEBUG_LEVEL > 1)
+                dump_scene("file-imported scene");
         end
     endtask
 
@@ -611,8 +795,9 @@ module traversal_controller_tb;
             while (!traversal_result_valid_o) begin
                 @(negedge clk);
                 cycle_count = cycle_count + 1;
-                if (cycle_count > 3000)
-                    $fatal(1, "[TEST %0d] Timed out waiting for traversal result", test_case);
+                if (cycle_count > TRAVERSAL_TIMEOUT_CYCLES)
+                    $fatal(1, "[TEST %0d] Timed out after %0d cycles waiting for traversal result",
+                           test_case, TRAVERSAL_TIMEOUT_CYCLES);
             end
             res = traversal_result_o;
             if (stack_overflow_o)
@@ -778,13 +963,28 @@ module traversal_controller_tb;
     endtask
 
     initial begin
-        $dumpfile("waves/traversal_controller.vcd");
-        $dumpvars(0, traversal_controller_tb);
+        if (DUMP_WAVES != 0) begin
+            $dumpfile("waves/traversal_controller.vcd");
+            // Do not dump the entire parameterized memory arrays. They can
+            // contain thousands of entries; transaction tracing and dump_scene
+            // provide the memory visibility without producing enormous VCDs.
+            $dumpvars(0, traversal_controller_tb);
+        end
     end
 
     initial begin
         test_case = 0;
         error_count = 0;
+        loaded_node_count = 0;
+        loaded_tri_count = 0;
+        if (NODE_BYTES != 32)
+            $fatal(1, "NODE_BYTES must be 32 for the current bvh_node_t format");
+        if (TRI_STRIDE <= 0)
+            $fatal(1, "TRI_STRIDE must be positive and must match sizeof(tri_t) in the exporter");
+        if (MAX_NODES < 1 || MAX_TRIANGLES < 1)
+            $fatal(1, "MAX_NODES and MAX_TRIANGLES must be positive");
+        if (STACK_DEPTH < 2)
+            $fatal(1, "STACK_DEPTH must be at least 2");
         traversal_valid_i = 1'b0;
         traversal_i = '0;
         traversal_result_ready_i = 1'b1;
@@ -990,53 +1190,60 @@ module traversal_controller_tb;
                         "Expected one triangle intersection request");
         report_test_summary("t_min clipping", result);
 
-/*
         // ------------------------------------------------------------
-        // TEST 10: Two triangles in one leaf, stored far-to-near.
-        // This checks closest-hit replacement within a single leaf.
+        // TEST 10: Two one-triangle leaves, farther child on the left.
+        // This is the legal representation produced by construct_bvh().
+        // The nearer right child should be visited first and prune the far leaf.
         // ------------------------------------------------------------
-        $display("\n[TEST 10] Two triangles in one leaf, far-to-near order");
+        $display("\n[TEST 10] Two leaves, far child allocated first");
         test_case = 10;
         reset_counts();
-        clear_scene();
-        set_triangle(0, 16'd11, 5.0);
-        set_triangle(1, 16'd22, 3.0);
-        set_node(0, -2.0, -2.0, 0.0, 2.0, 2.0, 6.0, TRI_BASE, 32'd2);
+        setup_two_child_bvh(1'b1);
         bvh_before = bvh_read_count;
         tri_mem_before = tri_mem_read_count;
         aabb_before = aabb_request_count;
         tri_before = tri_intersection_count;
         run_traversal(make_request(BVH_BASE, -0.375, -0.375, 0.0), result);
         check_condition(result.hit && (result.primitive_id == 16'd22),
-                        "Expected nearer primitive 22 after testing both triangles");
+                        "Expected nearest primitive 22 from right child");
         check_q16("closest distance", result.distance, 3.0, 2);
-        check_condition((tri_intersection_count-tri_before) == 2,
-                        "Expected both leaf triangles to be tested");
-        check_condition((tri_mem_read_count-tri_mem_before) == 2,
-                        "Expected two triangle memory reads");
-        report_test_summary("two triangles far-to-near", result);
+        check_condition((aabb_request_count-aabb_before) == 2,
+                        "Expected two child AABB tests");
+        check_condition((tri_intersection_count-tri_before) == 1 &&
+                        (tri_mem_read_count-tri_mem_before) == 1,
+                        "Expected only the nearer leaf triangle to be fetched and tested");
+        report_test_summary("far-left near-right leaves", result);
 
         // ------------------------------------------------------------
-        // TEST 11: Two triangles in one leaf, stored near-to-far.
-        // A farther later triangle must not replace the closest hit.
+        // TEST 11: Same geometry with the nearer child allocated on the left.
+        // This checks that child ordering works in either direction.
         // ------------------------------------------------------------
-        $display("\n[TEST 11] Two triangles in one leaf, near-to-far order");
+        $display("\n[TEST 11] Two leaves, near child allocated first");
         test_case = 11;
         reset_counts();
         clear_scene();
+        set_node(0, -2.0, -2.0, 0.0, 2.0, 2.0, 6.0,
+                 BVH_BASE + NODE_BYTES, 32'd2);
+        set_node(1, -2.0, -2.0, 2.5, 2.0, 2.0, 3.5,
+                 TRI_BASE, 32'd1);
+        set_node(2, -2.0, -2.0, 4.5, 2.0, 2.0, 5.5,
+                 TRI_BASE + TRI_STRIDE, 32'd1);
         set_triangle(0, 16'd22, 3.0);
         set_triangle(1, 16'd11, 5.0);
-        set_node(0, -2.0, -2.0, 0.0, 2.0, 2.0, 6.0, TRI_BASE, 32'd2);
         bvh_before = bvh_read_count;
         tri_mem_before = tri_mem_read_count;
         aabb_before = aabb_request_count;
         tri_before = tri_intersection_count;
         run_traversal(make_request(BVH_BASE, -0.375, -0.375, 0.0), result);
         check_condition(result.hit && (result.primitive_id == 16'd22),
-                        "Farther primitive 11 must not replace nearer primitive 22");
+                        "Expected nearest primitive 22 from left child");
         check_q16("closest distance", result.distance, 3.0, 2);
-        report_test_summary("two triangles near-to-far", result);
-*/
+        check_condition((aabb_request_count-aabb_before) == 2,
+                        "Expected two child AABB tests");
+        check_condition((tri_intersection_count-tri_before) == 1 &&
+                        (tri_mem_read_count-tri_mem_before) == 1,
+                        "Expected only the nearer leaf triangle to be fetched and tested");
+        report_test_summary("near-left far-right leaves", result);
 
         // ------------------------------------------------------------
         // TEST 12: A ray parallel to the triangle plane must not hit.
@@ -1055,6 +1262,47 @@ module traversal_controller_tb;
         run_traversal(test_req, result);
         check_condition(!result.hit, "Ray parallel to triangle plane should miss");
         report_test_summary("parallel ray", result);
+
+        // ------------------------------------------------------------
+        // TEST 13: Optional file-imported software-reference BVH.
+        // Enable with RUN_FILE_TEST=1 and generate both files using
+        // export_bvh_mem.c. The ray and optional expected result are module
+        // parameters so the same testbench can be reused for different scenes.
+        // ------------------------------------------------------------
+        if (RUN_FILE_TEST != 0) begin
+            $display("\n[TEST 13] File-imported BVH scene: %s / %s",
+                     BVH_DATA_FILE, TRI_DATA_FILE);
+            test_case = 13;
+            reset_counts();
+            load_scene_from_files(BVH_DATA_FILE, TRI_DATA_FILE);
+
+            check_condition(loaded_node_count > 0, "Imported BVH contains no nodes");
+            check_condition(loaded_tri_count > 0, "Imported triangle memory is empty");
+
+            test_req = make_request(BVH_BASE, FILE_RAY_OX, FILE_RAY_OY, FILE_RAY_OZ);
+            test_req.ray.direction = vec3(FILE_RAY_DX, FILE_RAY_DY, FILE_RAY_DZ);
+            test_req.inv_direction = vec3(
+                FILE_RAY_INV_DX, FILE_RAY_INV_DY, FILE_RAY_INV_DZ);
+            test_req.t_min.data = q16(FILE_T_MIN);
+            test_req.t_max.data = q16(FILE_T_MAX);
+
+            bvh_before = bvh_read_count;
+            tri_mem_before = tri_mem_read_count;
+            aabb_before = aabb_request_count;
+            tri_before = tri_intersection_count;
+            run_traversal(test_req, result);
+
+            if (FILE_EXPECT_HIT >= 0)
+                check_condition(result.hit == FILE_EXPECT_HIT,
+                                "File-scene hit result differs from FILE_EXPECT_HIT");
+            if (FILE_EXPECT_PRIMITIVE >= 0)
+                check_condition(result.hit &&
+                                (result.primitive_id == FILE_EXPECT_PRIMITIVE),
+                                "File-scene primitive differs from FILE_EXPECT_PRIMITIVE");
+            check_condition((bvh_read_count-bvh_before) > 0,
+                            "File-scene traversal did not read the BVH root");
+            report_test_summary("file-imported scene", result);
+        end
 
         if (error_count == 0)
             $display("\nPASS: all traversal integration checks passed");

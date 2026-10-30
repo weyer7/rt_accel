@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Fri Oct 30 17:58:41 2026
+[*] Fri Oct 30 19:18:33 2026
 [*]
 [dumpfile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.vcd"
-[dumpfile_mtime] "Fri Oct 30 17:58:34 2026"
-[dumpfile_size] 985562
+[dumpfile_mtime] "Fri Oct 30 19:18:06 2026"
+[dumpfile_size] 1949521
 [savefile] "/home/ajwey/Purdue/SoCET/GPU/rt_accel/waves/traversal_controller.gtkw"
 [timestart] 0
 [size] 2560 1481
 [pos] -1 -1
-*-18.621201 804000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-19.827051 3232000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] traversal_controller_tb.
 [sst_width] 297
 [signals_width] 246
@@ -52,6 +52,7 @@ traversal_controller_tb.u_dut.bvh_mem_req_valid_o
 traversal_controller_tb.u_dut.bvh_mem_resp_data_i[255:0]
 @28
 traversal_controller_tb.u_dut.bvh_mem_resp_error_i
+@29
 traversal_controller_tb.u_dut.bvh_mem_resp_valid_i
 @22
 traversal_controller_tb.u_dut.bvh_root_d[31:0]
@@ -79,9 +80,7 @@ traversal_controller_tb.u_dut.current_t_near_d[31:0]
 traversal_controller_tb.u_dut.current_t_near_q[31:0]
 traversal_controller_tb.u_dut.current_triangle_d[303:0]
 traversal_controller_tb.u_dut.current_triangle_q[303:0]
-@23
 traversal_controller_tb.u_dut.left_child_d[255:0]
-@22
 traversal_controller_tb.u_dut.left_child_q[255:0]
 @28
 traversal_controller_tb.u_dut.left_hit_d
