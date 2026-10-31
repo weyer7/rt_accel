@@ -87,8 +87,8 @@ module traversal_controller #(
         ST_RIGHT_CHILD_REQ,
         ST_RIGHT_CHILD_WAIT,
         ST_AABB_LEFT_REQ,
-        ST_AABB_LEFT_WAIT,
         ST_AABB_RIGHT_REQ,
+        ST_AABB_LEFT_WAIT,
         
         ST_AABB_RIGHT_WAIT,
         ST_PUSH_CHILDREN,
@@ -426,6 +426,12 @@ module traversal_controller #(
 
             ST_AABB_LEFT_REQ: begin
                 if (aabb_req_valid_o && aabb_req_ready_i)
+                    // state_d = ST_AABB_LEFT_WAIT;
+                    state_d = ST_AABB_RIGHT_REQ;
+            end
+
+            ST_AABB_RIGHT_REQ: begin
+                if (aabb_req_valid_o && aabb_req_ready_i)
                     state_d = ST_AABB_LEFT_WAIT;
             end
 
@@ -433,13 +439,8 @@ module traversal_controller #(
                 if (aabb_result_valid_i) begin
                     left_hit_d    = aabb_result_i.hit;
                     left_t_near_d = aabb_result_i.t_near;
-                    state_d       = ST_AABB_RIGHT_REQ;
+                    state_d       = ST_AABB_RIGHT_WAIT;
                 end
-            end
-
-            ST_AABB_RIGHT_REQ: begin
-                if (aabb_req_valid_o && aabb_req_ready_i)
-                    state_d = ST_AABB_RIGHT_WAIT;
             end
 
             ST_AABB_RIGHT_WAIT: begin

@@ -245,7 +245,7 @@ module traversal_controller (
 				aabb_req_valid_o = 1'b1;
 				aabb_req_o[191-:192] = left_child_q[255-:192];
 			end
-			5'd14: begin
+			5'd13: begin
 				aabb_req_valid_o = 1'b1;
 				aabb_req_o[191-:192] = right_child_q[255-:192];
 			end
@@ -364,14 +364,14 @@ module traversal_controller (
 				if (aabb_req_valid_o && aabb_req_ready_i)
 					state_d = 5'd13;
 			5'd13:
+				if (aabb_req_valid_o && aabb_req_ready_i)
+					state_d = 5'd14;
+			5'd14:
 				if (aabb_result_valid_i) begin
 					left_hit_d = aabb_result_i[64];
 					left_t_near_d = aabb_result_i[63-:32];
-					state_d = 5'd14;
-				end
-			5'd14:
-				if (aabb_req_valid_o && aabb_req_ready_i)
 					state_d = 5'd15;
+				end
 			5'd15:
 				if (aabb_result_valid_i) begin
 					right_hit_d = aabb_result_i[64];
@@ -548,9 +548,9 @@ module traversal_controller (
 	end
 	initial begin
 		if (STACK_DEPTH < 2)
-			$display("Error [%0t] source/traversal_controller_src.sv:647:13 - traversal_controller.<unnamed_block>.<unnamed_block>\n msg: ", $time, "bvh_traversal_controller: STACK_DEPTH must be >= 2");
+			$display("Error [%0t] source/traversal_controller_src.sv:648:13 - traversal_controller.<unnamed_block>.<unnamed_block>\n msg: ", $time, "bvh_traversal_controller: STACK_DEPTH must be >= 2");
 		if (TRIANGLE_STRIDE_BYTES <= 0)
-			$display("Error [%0t] source/traversal_controller_src.sv:649:13 - traversal_controller.<unnamed_block>.<unnamed_block>\n msg: ", $time, "bvh_traversal_controller: TRIANGLE_STRIDE_BYTES must be positive");
+			$display("Error [%0t] source/traversal_controller_src.sv:650:13 - traversal_controller.<unnamed_block>.<unnamed_block>\n msg: ", $time, "bvh_traversal_controller: TRIANGLE_STRIDE_BYTES must be positive");
 	end
 	initial _sv2v_0 = 0;
 endmodule
