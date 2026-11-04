@@ -9,13 +9,13 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define IMAGE_WIDTH  1024
-#define IMAGE_HEIGHT 1024
+#define IMAGE_WIDTH  32
+#define IMAGE_HEIGHT 32
 #define OUTPUT_FILE  "armadillo.ppm"
 #define DEG2RAD(deg) ((deg) * (float)M_PI / 180.0f)
 #define SHADOW_EPSILON 0.001f
 
-#define BRUTE_FORCE
+// #define BRUTE_FORCE
 
 typedef struct { float3_t position, forward, right, up; float fov_y; } camera_t;
 
@@ -52,7 +52,7 @@ static camera_t make_camera(aabb_t bounds, float yaw_deg, float pitch_deg) {
     float3_t extents = v3_sub(bounds.corner_b, bounds.corner_a);
     float radius = 0.5f * v3_length(extents);
     float fov_y = DEG2RAD(60.0f);
-    float distance = (radius / tanf(fov_y * 0.5f)) * 1.2f;
+    float distance = (radius / tanf(fov_y * 0.5f)) * 0.8f;
 
     float yaw = DEG2RAD(yaw_deg), pitch = DEG2RAD(pitch_deg);
     float3_t offset = { distance * cosf(pitch) * sinf(yaw), distance * sinf(pitch), distance * cosf(pitch) * cosf(yaw) };

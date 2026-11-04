@@ -213,3 +213,7 @@ veryclean: clean
 .PHONY: rt-ref-%-tris
 rt-ref-%-tris:
 	python3 testbench/scripts/run_traversal_reference.py model/assets/random_$*.tri testbench/inputs/sample_reference_rays.csv --project-dir . --exporter model/util/export_bvh_mem --reference-runner model/util/rtu_reference_runner
+
+.PHONY: hardware-render-%
+hardware-render-%:
+	python3 testbench/scripts/render_rtu_hardware.py --width 64 --height 64 --spp 1 model/assets/$*.tri

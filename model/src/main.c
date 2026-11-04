@@ -72,7 +72,7 @@ int main(void) {
 
     uint32_t tri_count = 0;
 
-    tri_t *triangles = load_triangles_from_file("assets/armadillo.tri", &tri_count);
+    tri_t *triangles = load_triangles_from_file("assets/random_1000.tri", &tri_count);
 
     if (!triangles) {
         printf("Failed to load geometry or file contained\nfewer than 9 floats.\n");
@@ -130,7 +130,7 @@ int main(void) {
 
     int render_result = render_bvh(
         triangles, tri_count, bvh_root, bvh_node_count,
-        140.0, 25.0, 4, &total_rays
+        140.0, 25.0, 1, &total_rays
     );
 
     clock_gettime(CLOCK_MONOTONIC, &end_time);
